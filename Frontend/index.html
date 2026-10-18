@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduMetrics - Industry-Grade Student Analytics Portal Framework">
+  <title>EduMetrics | Student Management & Analytics Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <div id="aria-live" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+  <div class="app-container">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">◈</span>
+        <h2 class="logo-text">EduMetrics</h2>
+      </div>
+      <nav class="nav-list" role="navigation" aria-label="Main Navigation">
+        <button class="nav-item active" data-view="dashboard" aria-current="page">
+          <span class="nav-icon">📊</span> Dashboard
+        </button>
+        <button class="nav-item" data-view="all-students">
+          <span class="nav-icon">👥</span> All Students
+        </button>
+        <button class="nav-item" data-view="add">
+          <span class="nav-icon">➕</span> Add Student
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-avatar">EM</div>
+        <div>
+          <div class="user-name">Admin Portal</div>
+          <div class="user-role">Registrar Staff</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="main-content">
+
+      <header class="topbar">
+        <button class="menu-toggle" id="sidebar-toggle" aria-label="Toggle Navigation Sidebar">
+          <span class="hamburger"></span>
+        </button>
+        <div class="topbar-search">
+          <span class="search-icon">🔍</span>
+          <input type="search" id="global-search" placeholder="Quick search by Roll No, Name or Dept...">
+        </div>
+        <div class="topbar-actions">
+          <button class="btn-icon" id="export-pdf-btn" title="Export Registry to PDF Document">📄 Export PDF</button>
+          <button class="btn-icon" id="export-excel-btn" title="Export Ledger to Excel Sheet">📊 Export Excel</button>
+          <button class="btn-primary" data-view="add">+ Add Student</button>
+        </div>
+      </header>
+
+      <section id="view-dashboard" class="view active">
+        <div class="page-header">
+          <div>
+            <h1>System Overview</h1>
+            <p class="page-subtitle">Academic metrics, attendance summaries, and performance analysis trends.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div>
+              <span id="total-students-count" class="stat-number">0</span>
+              <span class="stat-label">Total Registered Students</span>
+            </div>
+          </div>
+          <div class="stat-card accent">
+            <div class="stat-icon">🎓</div>
+            <div>
+              <span id="avg-gpa" class="stat-number">0.00</span>
+              <span class="stat-label">Average Institutional GPA</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div>
+              <span id="avg-attendance" class="stat-number">0.0%</span>
+              <span class="stat-label">Average Attendance Rate</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <h2>Departmental Distributions</h2>
+            <div class="chart-container">
+              <canvas id="deptDistributionChart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <h2>GPA vs Attendance Trends</h2>
+            <div class="chart-container">
+              <canvas id="performanceTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Recent Student Registrations</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Roll No</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>GPA</th>
+                  <th>Attendance</th>
+                </tr>
+              </thead>
+              <tbody id="recent-students-tbody">
+                <tr>
+                  <td colspan="5" class="empty-row">Loading recent student entries...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-all-students" class="view">
+        <div class="page-header">
+          <div>
+            <h1>Student Directory</h1>
+            <p class="page-subtitle">Manage, query, filter, and sort institutional student profiles.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="filter-row">
+            <input type="text" id="filter-search" placeholder="Search parameters..."
+              style="background: var(--bg-3); border: 1px solid var(--border); color: var(--text-1); padding: 0.45rem 0.75rem; border-radius: var(--radius-sm);">
+            <select id="filter-dept">
+              <option value="">All Departments</option>
+              <option value="CS">Computer Science</option>
+              <option value="EC">Electronics</option>
+              <option value="ME">Mechanical</option>
+              <option value="CE">Civil</option>
+              <option value="IT">Information Tech</option>
+            </select>
+            <select id="filter-year">
+              <option value="">All Years</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+              <option value="4">Year 4</option>
+            </select>
+            <input type="number" id="filter-gpa" min="0" max="10" step="0.5" placeholder="Min GPA"
+              style="background: var(--bg-3); border: 1px solid var(--border); color: var(--text-1); padding: 0.45rem 0.75rem; border-radius:
+               var(--radius-sm); max-width: 120px;">
+            <select id="filter-sort">
+              <option value="nameAsc">Name (A-Z)</option>
+              <option value="nameDesc">Name (Z-A)</option>
+              <option value="gpaHigh">Performance (Highest GPA)</option>
+              <option value="gpaLow">Performance (Lowest GPA)</option>
+              <option value="attendanceHigh">Attendance (Highest)</option>
+              <option value="rollNo">Roll Number</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Roll No</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Year</th>
+                  <th>GPA</th>
+                  <th>Attendance</th>
+                  <th>Email</th>
+                  <th>Documents</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="students-tbody">
+                <tr>
+                  <td colspan="9" class="empty-row">No records synchronized from server database.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-add" class="view" aria-labelledby="form-title">
+        <div class="page-header">
+          <div>
+            <h1 id="form-title">Add New Student</h1>
+            <p class="page-subtitle" id="form-subtitle">Fill in the details below. Fields marked with * are required
+              parameters.</p>
+          </div>
+        </div>
+        <div class="card form-card">
+          <form id="student-form" novalidate aria-describedby="form-subtitle">
+            <input type="hidden" id="edit-id" />
+            <div class="form-grid">
+              <div class="field-group">
+                <label for="f-roll">Roll Number *</label>
+                <input type="text" id="f-roll" name="rollNo" required pattern="[A-Z0-9\-]{3,12}" autocomplete="off" />
+              </div>
+              <div class="field-group">
+                <label for="f-name">Full Name *</label>
+                <input type="text" id="f-name" name="name" required minlength="2" maxlength="80" autocomplete="name" />
+              </div>
+              <div class="field-group">
+                <label for="f-email">Email Address *</label>
+                <input type="email" id="f-email" name="email" required autocomplete="email" />
+              </div>
+              <div class="field-group">
+                <label for="f-phone">Phone Number</label>
+                <input type="tel" id="f-phone" name="phone" pattern="[0-9]{10}" autocomplete="tel" />
+              </div>
+              <div class="field-group">
+                <label for="f-dept">Department *</label>
+                <select id="f-dept" name="department" required>
+                  <option value="">Select department</option>
+                  <option value="CS">Computer Science</option>
+                  <option value="EC">Electronics</option>
+                  <option value="ME">Mechanical</option>
+                  <option value="CE">Civil</option>
+                  <option value="IT">Information Tech</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="f-year">Year of Study *</label>
+                <select id="f-year" name="year" required>
+                  <option value="">Select year</option>
+                  <option value="1">Year 1</option>
+                  <option value="2">Year 2</option>
+                  <option value="3">Year 3</option>
+                  <option value="4">Year 4</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="f-gpa">GPA (0.0 – 10.0) *</label>
+                <input type="number" id="f-gpa" name="gpa" min="0" max="10" step="0.01" required />
+              </div>
+              <div class="field-group">
+                <label for="f-attendance">Attendance % (0 – 100) *</label>
+                <input type="number" id="f-attendance" name="attendance" min="0" max="100" step="0.1" required />
+              </div>
+              <div class="field-group">
+                <label for="f-dob">Date of Birth</label>
+                <input type="date" id="f-dob" name="dob" autocomplete="bday" />
+              </div>
+              <div class="field-group">
+                <label for="f-photo-url">Student Photograph Link</label>
+                <input type="url" id="f-photo-url" name="photoUrl" placeholder="Cloudinary / S3 asset path..." />
+              </div>
+              <div class="field-group full-width">
+                <label for="f-doc-url">Supporting Certificates & Transcripts Stack (Link)</label>
+                <input type="url" id="f-doc-url" name="docUrl"
+                  placeholder="External dynamic PDF archive resource URI path..." />
+              </div>
+              <div class="field-group full-width">
+                <label for="f-address">Address</label>
+                <textarea id="f-address" name="address" rows="3" maxlength="300"
+                  placeholder="Enter residential address details..."></textarea>
+              </div>
+              <div class="field-group full-width">
+                <label for="f-doc-url">Supporting Certificates & Transcripts Stack (Link)</label>
+                <input type="url" id="f-doc-url" name="docUrl"
+                  placeholder="External dynamic PDF archive resource URI path..." />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" id="cancel-btn">Cancel</button>
+              <button type="submit" class="btn-primary" id="submit-btn">Save Student</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal">
+      <h2 id="modal-title">Confirm Database Operation</h2>
+      <p id="modal-body">Are you sure you want to proceed with executing this critical lifecycle action?</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn-danger" id="modal-confirm">Execute Purge</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
